@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频转GIF工具</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 视频转GIF工具</h1>
+            <p>将视频文件转换为高质量GIF动画</p>
+        </header>
+
+        <main>
+            <!-- 文件上传区域 -->
+            <div class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <div class="upload-icon">🎥</div>
+                        <h3>点击或拖拽视频到此处</h3>
+                        <p>支持MP4、WebM、AVI、MOV等格式</p>
+                        <input type="file" id="fileInput" accept="video/*">
+                        <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                            选择视频
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 转换设置 -->
+            <div class="settings-section" id="settingsSection" style="display: none;">
+                <h3>GIF转换设置</h3>
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <label for="gifWidth">宽度:</label>
+                        <input type="number" id="gifWidth" placeholder="自动" min="50" max="1920" value="320">
+                    </div>
+                    <div class="setting-item">
+                        <label for="gifHeight">高度:</label>
+                        <input type="number" id="gifHeight" placeholder="自动" min="50" max="1080" value="240">
+                    </div>
+                    <div class="setting-item">
+                        <label for="frameRate">帧率 (FPS):</label>
+                        <input type="range" id="frameRate" min="1" max="30" value="10">
+                        <span id="frameRateValue">10</span>
+                    </div>
+                    <div class="setting-item">
+                        <label for="quality">质量:</label>
+                        <input type="range" id="quality" min="1" max="20" value="10">
+                        <span id="qualityValue">10</span>
+                    </div>
+                    <div class="setting-item">
+                        <label for="startTime">开始时间 (秒):</label>
+                        <input type="number" id="startTime" min="0" step="0.1" value="0" placeholder="0">
+                    </div>
+                    <div class="setting-item">
+                        <label for="duration">时长 (秒):</label>
+                        <input type="number" id="duration" min="0.1" step="0.1" value="3" placeholder="3">
+                    </div>
+                    <div class="setting-item aspect-ratio-item">
+                        <label for="keepAspect">保持宽高比:</label>
+                        <input type="checkbox" id="keepAspect" checked>
+                    </div>
+                    <div class="setting-item quick-settings-item">
+                        <label>快速设置:</label>
+                        <div class="quick-sizes">
+                            <button type="button" onclick="setQuickSize(480, 360)" class="quick-size-btn">480×360</button>
+                            <button type="button" onclick="setQuickSize(320, 240)" class="quick-size-btn">320×240</button>
+                            <button type="button" onclick="setQuickSize(240, 180)" class="quick-size-btn">240×180</button>
+                            <button type="button" onclick="clearSize()" class="quick-size-btn clear">清除</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 视频预览和时间轴控制 -->
+            <div class="preview-section" id="previewSection" style="display: none;">
+                <h3>视频预览</h3>
+                <div class="video-container">
+                    <video id="videoPlayer" controls>
+                        您的浏览器不支持视频播放。
+                    </video>
+                    <div class="video-info" id="videoInfo"></div>
+                </div>
+
+                <!-- 时间轴选择器 -->
+                <div class="timeline-section">
+                    <h4>选择转换时间段</h4>
+                    <div class="timeline-container">
+                        <div class="timeline" id="timeline">
+                            <div class="timeline-track"></div>
+                            <div class="timeline-selection" id="timelineSelection"></div>
+                            <div class="timeline-handle start" id="startHandle"></div>
+                            <div class="timeline-handle end" id="endHandle"></div>
+                        </div>
+                        <div class="timeline-labels">
+                            <span id="currentStart">0.0s</span>
+                            <span id="currentEnd">3.0s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="convert-btn" onclick="convertToGif()">开始转换GIF</button>
+                    <button class="clear-btn" onclick="clearVideo()">清空视频</button>
+                </div>
+            </div>
+
+            <!-- 转换进度 -->
+            <div class="progress-section" id="progressSection" style="display: none;">
+                <h3>转换进度</h3>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">准备转换...</div>
+                </div>
+            </div>
+
+            <!-- 转换结果 -->
+            <div class="result-section" id="resultSection" style="display: none;">
+                <h3>转换结果</h3>
+                <div class="result-container">
+                    <div class="gif-preview">
+                        <img id="gifPreview" alt="转换后的GIF" style="display: none;">
+                        <div class="gif-info" id="gifInfo"></div>
+                    </div>
+                    <div class="result-actions">
+                        <button class="download-btn" id="downloadBtn" onclick="downloadGif()">
+                            📥 下载GIF
+                        </button>
+                        <button class="reset-btn" onclick="resetConverter()">
+                            🔄 重新转换
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>使用Web技术，无需服务器，完全在本地处理</p>
+        </footer>
+    </div>
+
+    <!-- 引入gif.js库 -->
+    <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
